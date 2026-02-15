@@ -22,5 +22,5 @@ export async function startDevice(id) {
 
 export async function stopDevice(id) {
   await new Promise((res) => setTimeout(res, 200));
-  devices = devices.map((d) => (d.id === id ? { ...d, status: "ON" } : d));
+  devices = devices.map((d) => (d.id === id ? { ...d, status: "OFF" } : d));
 }
