@@ -1,0 +1,59 @@
+/* Waste boxes container */
+.waste-boxes {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.waste-box {
+  background: var(--card-bg);
+  backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 150px;
+  height: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  transition: transform 0.2s;
+}
+
+.waste-box:hover {
+  transform: translateY(-5px);
+}
+
+.waste-box strong {
+  font-size: 2.5rem;
+  margin-top: 8px;
+}
+
+/* Device commands row */
+.device-commands {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.device-command {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card-bg);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.device-command button {
+  min-width: 60px;
+}
+
+/* Device command secondary button */
+.device-command button.secondary {
+  background: rgba(255,255,255,0.08);
+}
