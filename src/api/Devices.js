@@ -1,10 +1,9 @@
-// src/api/Devices.js
 
-// Fake devices & stats
+// Fake 
 let devices = [
-  { id: 1, name: "Conveyor", status: "ON" },
-  { id: 2, name: "Separator", status: "OFF" },
-  { id: 3, name: "Shredder", status: "OFF" },
+  { id: 1, name: "Kamera", status: "ON" },
+  { id: 2, name: "Pokretna traka", status: "OFF" },
+  { id: 3, name: "Senzor pokreta", status: "OFF" },
 ];
 
 let wasteStats = { plastic: 12, metal: 5, paper: 20 };
