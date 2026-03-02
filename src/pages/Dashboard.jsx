@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     paper: 0,
     plastic: 0,
-    metal: 0,
+    glass: 0,
   });
   const [loadingDevice, setLoadingDevice] = useState(null); // per-device loading
   const [initialLoading, setInitialLoading] = useState(true); // first load only
@@ -23,7 +23,7 @@ export default function Dashboard() {
   const wasteData = [
     { type: "paper", label: "Papir", icon: "🧃", color: "#3498db" },
     { type: "plastic", label: "Plastika", icon: "🧋", color: "#f1c40f" },
-    { type: "metal", label: "Metal", icon: "🥫", color: "#e74c3c" },
+    { type: "glass", label: "Staklo", icon: "🍷", color: "#e74c3c" },
   ];
 
    useEffect(() => {
@@ -34,7 +34,7 @@ export default function Dashboard() {
       setStats({
         paper: statusData.counts?.cardboard || 0,
         plastic: statusData.counts?.plastic || 0,
-        metal: statusData.counts?.metal || 0,
+        glass: statusData.counts?.glass || 0,
       });
 
       // If no /devices endpoint
@@ -140,7 +140,7 @@ const handleCommand = async (device_id, action) => {
                       <button
                         className="btn-pill-start"
                         disabled={
-                          device.mode !== "ready" ||
+                          device.status === "enabled" ||
                           loadingDevice === device.device_id
                         }
                         onClick={() =>
@@ -153,7 +153,7 @@ const handleCommand = async (device_id, action) => {
                       <button
                         className="btn-pill-stop"
                         disabled={
-                          device.mode === "ready" ||
+                          device.status === "disabled" ||
                           loadingDevice === device.device_id
                         }
                         onClick={() =>
