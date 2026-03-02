@@ -4,9 +4,11 @@ import { useAuth } from "../context/AuthContext";
 
 export default function Dashboard() {
   const { role, logout } = useAuth();
+
   const [devices, setDevices] = useState([]);
   const [stats, setStats] = useState({});
-  const [loading, setLoading] = useState(true);
+  const [loadingDevice, setLoadingDevice] = useState(null); // per-device loading
+  const [initialLoading, setInitialLoading] = useState(true); // first load only
   const [connected, setConnected] = useState(true);
 
   const wasteData = [
@@ -25,41 +27,54 @@ export default function Dashboard() {
       } catch {
         setConnected(false);
       } finally {
-        setLoading(false);
+        setInitialLoading(false);
       }
     };
+
     load();
     const id = setInterval(load, 3000);
     return () => clearInterval(id);
   }, []);
 
   const handleCommand = async (id, cmd) => {
-    setLoading(true);
+    setLoadingDevice(id);
+
     try {
       if (cmd === "start") await startDevice(id);
-      else if (cmd === "stop") await stopDevice(id);
+      if (cmd === "stop") await stopDevice(id);
+
       const updated = await fetchStatus();
       setDevices(updated.devices || []);
+    } catch (error) {
+      console.error("Command failed:", error);
     } finally {
-      setLoading(false);
+      setLoadingDevice(null);
     }
   };
 
   return (
     <div className="dashboard-page">
-      
-      {/*NASLOV*/}
+      {/* HEADER */}
       <div className="top-header-cloud">
-        <h2 className="dash_title">
-          Razvrstavanje otpada 
-        </h2>
+        <h2 className="dash_title">Razvrstavanje otpada</h2>
+
         <div className="header-controls">
           <div className="status-indicator">
             <span className={`dot ${connected ? "on" : "off"}`} />
           </div>
-          <button className="logout-btn" onClick={logout}>Odjavi se</button>
+
+          <button className="logout-btn" onClick={logout}>
+            Odjavi se
+          </button>
         </div>
       </div>
+
+      {/* Optional initial loading message */}
+      {initialLoading && (
+        <div style={{ textAlign: "center", marginTop: "20px", color: "white" }}>
+          Učitavanje podataka...
+        </div>
+      )}
 
       <div className="main-split-content">
         {/* VIEWER PANEL */}
@@ -71,8 +86,12 @@ export default function Dashboard() {
                   <span className="large-emoji">{item.icon}</span>
                   <span className="label-text">{item.label}</span>
                 </div>
+
                 <div className="white-square counter-box">
-                  <strong className="count-number" style={{ color: item.color }}>
+                  <strong
+                    className="count-number"
+                    style={{ color: item.color }}
+                  >
                     {stats[item.type] || 0}
                   </strong>
                 </div>
@@ -81,29 +100,44 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* OPERATOR PANEL*/}
-        {(role === "operator") && (
+        {/* OPERATOR PANEL */}
+        {role === "operator" && (
           <div className="admin-side-panel">
             <div className="admin-light-box">
               <h3 className="admin-box-title">Kontrola uređaja</h3>
+
               <div className="device-list">
                 {devices.map((device) => (
                   <div key={device.id} className="device-pill-row">
-                    <span className="device-name-label">{device.name}</span>
+                    <span className="device-name-label">
+                      {device.name}
+                    </span>
+
                     <div className="pill-buttons">
                       <button
                         className="btn-pill-start"
-                        disabled={device.status === "ON" || loading}
-                        onClick={() => handleCommand(device.id, "start")}
+                        disabled={
+                          device.status === "ON" ||
+                          loadingDevice === device.id
+                        }
+                        onClick={() =>
+                          handleCommand(device.id, "start")
+                        }
                       >
-                        ON
+                        {loadingDevice === device.id ? "..." : "ON"}
                       </button>
+
                       <button
                         className="btn-pill-stop"
-                        disabled={device.status === "OFF" || loading}
-                        onClick={() => handleCommand(device.id, "stop")}
+                        disabled={
+                          device.status === "OFF" ||
+                          loadingDevice === device.id
+                        }
+                        onClick={() =>
+                          handleCommand(device.id, "stop")
+                        }
                       >
-                        OFF
+                        {loadingDevice === device.id ? "..." : "OFF"}
                       </button>
                     </div>
                   </div>
@@ -113,14 +147,13 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-      {/* Ko je u pitanju :3 */}
+
+      {/* Floating role indicator */}
       <div className="admin-floating-circle">
         <span className="admin-emoji">
-          {role === "operator"  ? "👩🏻‍💻" : "👩🏻"}
+          {role === "operator" ? "👩🏻‍💻" : "👩🏻"}
         </span>
       </div>
-
-
     </div>
   );
 }
