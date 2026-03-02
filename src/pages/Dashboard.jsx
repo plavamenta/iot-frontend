@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import { fetchStatus, startDevice, stopDevice } from "../api/Devices";
 import { useAuth } from "../context/AuthContext";
+import {
+  fetchStatus,
+  fetchDevices,
+  startDevice,
+  stopDevice,
+} from "../api/Devices";
 
 export default function Dashboard() {
   const { role, logout } = useAuth();
 
   const [devices, setDevices] = useState([]);
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState({
+    paper: 0,
+    plastic: 0,
+    metal: 0,
+  });
   const [loadingDevice, setLoadingDevice] = useState(null); // per-device loading
   const [initialLoading, setInitialLoading] = useState(true); // first load only
   const [connected, setConnected] = useState(true);
@@ -17,40 +26,54 @@ export default function Dashboard() {
     { type: "metal", label: "Metal", icon: "🥫", color: "#e74c3c" },
   ];
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await fetchStatus();
-        setDevices(data.devices || []);
-        setStats(data.wasteStats || {});
-        setConnected(true);
-      } catch {
-        setConnected(false);
-      } finally {
-        setInitialLoading(false);
-      }
-    };
+   useEffect(() => {
+  const load = async () => {
+    try {
+      const statusData = await fetchStatus();
 
-    load();
-    const id = setInterval(load, 3000);
-    return () => clearInterval(id);
-  }, []);
+      setStats({
+        paper: statusData.counts?.cardboard || 0,
+        plastic: statusData.counts?.plastic || 0,
+        metal: statusData.counts?.metal || 0,
+      });
 
-  const handleCommand = async (id, cmd) => {
-    setLoadingDevice(id);
+      // If no /devices endpoint
+      setDevices([statusData]);
+
+      setConnected(true);
+    } catch (err) {
+      console.error(err);
+      setConnected(false);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  load();
+  const id = setInterval(load, 3000);
+  return () => clearInterval(id);
+}, []);
+
+const handleCommand = async (device_id, action) => {
+    setLoadingDevice(device_id);
 
     try {
-      if (cmd === "start") await startDevice(id);
-      if (cmd === "stop") await stopDevice(id);
+      if (action === "start") {
+        await startDevice(device_id, role);
+      } else {
+        await stopDevice(device_id, role);
+      }
 
-      const updated = await fetchStatus();
-      setDevices(updated.devices || []);
+      // Refresh devices posle komande
+      const updatedDevices = await fetchDevices();
+      setDevices(updatedDevices || []);
     } catch (error) {
       console.error("Command failed:", error);
     } finally {
       setLoadingDevice(null);
     }
   };
+
 
   return (
     <div className="dashboard-page">
@@ -108,38 +131,39 @@ export default function Dashboard() {
 
               <div className="device-list">
                 {devices.map((device) => (
-                  <div key={device.id} className="device-pill-row">
+                  <div key={device.device_id} className="device-pill-row">
                     <span className="device-name-label">
-                      {device.name}
+                      {device.device_id}
                     </span>
 
                     <div className="pill-buttons">
                       <button
                         className="btn-pill-start"
                         disabled={
-                          device.status === "ON" ||
-                          loadingDevice === device.id
+                          device.mode !== "ready" ||
+                          loadingDevice === device.device_id
                         }
                         onClick={() =>
-                          handleCommand(device.id, "start")
+                          handleCommand(device.device_id, "start")
                         }
                       >
-                        {loadingDevice === device.id ? "..." : "ON"}
+                        {loadingDevice === device.device_id ? "..." : "ON"}
                       </button>
 
                       <button
                         className="btn-pill-stop"
                         disabled={
-                          device.status === "OFF" ||
-                          loadingDevice === device.id
+                          device.mode === "ready" ||
+                          loadingDevice === device.device_id
                         }
                         onClick={() =>
-                          handleCommand(device.id, "stop")
+                          handleCommand(device.device_id, "stop")
                         }
                       >
-                        {loadingDevice === device.id ? "..." : "OFF"}
+                        {loadingDevice === device.device_id ? "..." : "OFF"}
                       </button>
                     </div>
+                    
                   </div>
                 ))}
               </div>
