@@ -140,7 +140,7 @@ const handleCommand = async (device_id, action) => {
                       <button
                         className="btn-pill-start"
                         disabled={
-                          device.status === "enabled" ||
+                          device.connection_state === "Connected" ||
                           loadingDevice === device.device_id
                         }
                         onClick={() =>
@@ -153,7 +153,7 @@ const handleCommand = async (device_id, action) => {
                       <button
                         className="btn-pill-stop"
                         disabled={
-                          device.status === "disabled" ||
+                          device.connection_state === "Disconnected" ||
                           loadingDevice === device.device_id
                         }
                         onClick={() =>
