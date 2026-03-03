@@ -3,11 +3,11 @@ import { createContext, useContext, useState } from "react";
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null); // user info
-  const [role, setRole] = useState(null); // "viewer" or "operator"
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
 
   const login = (userRole) => {
-    setUser({ name: "Test User" }); // simple fake user
+    setUser({ name: "Test User" }); 
     setRole(userRole);
   };
 
@@ -23,7 +23,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Custom hook for easier usage
 export function useAuth() {
   return useContext(AuthContext);
 }
